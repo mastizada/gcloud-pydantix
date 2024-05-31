@@ -28,6 +28,11 @@ T = TypeVar("T")
 DecoratorType = Callable[[Callable[P, T]], Callable[P, T]]
 
 
+def os_name():
+    """Mock-able os.name resolution."""
+    return os.name
+
+
 def get_service_data(service: str | StringIO | None) -> dict[str, Any]:
     """
     Get service auth data for one of the available methods.
@@ -44,14 +49,13 @@ def get_service_data(service: str | StringIO | None) -> dict[str, Any]:
         cloudsdk_config = os.environ.get("CLOUDSDK_CONFIG")
         if cloudsdk_config is not None:
             sdk_path = Path(cloudsdk_config)
-        elif os.name != "nt":
+        elif os_name() != "nt":
             sdk_path = Path.home() / ".config" / "gcloud"
         else:
             try:
                 sdk_path = Path(os.environ["APPDATA"]) / "gcloud"
             except KeyError:
                 sdk_path = Path(os.environ.get("SystemDrive", "C:")) / "\\" / "gcloud"  # noqa: SIM112
-
         service = str(sdk_path / "application_default_credentials.json")
         set_explicitly = bool(cloudsdk_config)
     else:
@@ -137,10 +141,8 @@ class GCPToken:
             refresh_method = self._refresh_authorized_user
         elif self.token_type == TokenType.GCE_METADATA:
             refresh_method = self._refresh_gce_metadata
-        elif self.token_type == TokenType.SERVICE_ACCOUNT:
-            refresh_method = self._refresh_service_account
         else:
-            raise RuntimeError(f"Unsupported token type {self.token_type}")
+            refresh_method = self._refresh_service_account
 
         # apply the retry decorator if it is supplied
         self.refresh_method: Callable[[int], Awaitable[TokenResponse]]

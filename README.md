@@ -1,4 +1,4 @@
-# gcloud-pydantic
+# gcloud-pydantix
 
 AsyncIO Google Cloud Client Library using Pydantic and HTTPX
 
@@ -24,7 +24,7 @@ from gcloud.bigquery import BigQueryClient
 @asynccontextmanager
 async def lifespan(app):
     app.state.http = AsyncClient(http2=True, timeout=10)
-    gcp_session = GCPToken(app.state.http, scopes=(...))
+    gcp_session = GCPToken(app.state.http, scopes=[...])
     app.state.bigquery = BigQueryClient(
         project="GCP_PROJECT", token_session=gcp_session, http_client=app.state.http
     )
