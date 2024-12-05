@@ -1,6 +1,6 @@
 from enum import Enum
 
-from gcloud.base import BaseModel
+from gcloud.base.utils import BaseModel
 
 
 class TokenType(Enum):

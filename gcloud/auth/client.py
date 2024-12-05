@@ -1,12 +1,11 @@
 import asyncio
 import os
-from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 from io import StringIO
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from time import time
-from typing import Any, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any
 
 import jwt
 import orjson
@@ -20,12 +19,12 @@ from gcloud.auth.constants import (
     REFRESH_HEADERS,
 )
 from gcloud.auth.schemas import TokenResponse, TokenType
+from gcloud.base.utils import DecoratorType
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
 
 RETRY_EXCEPTIONS = (HTTPError, JSONDecodeError, ValidationError, TypeError, ValueError)
-
-P = ParamSpec("P")
-T = TypeVar("T")
-DecoratorType = Callable[[Callable[P, T]], Callable[P, T]]
 
 
 def os_name():
@@ -150,9 +149,6 @@ class GCPToken:
             self.refresh_method = refresh_method
         else:
             self.refresh_method = retry_decorator(refresh_method)
-        # self.refresh_method: Callable[[int], Awaitable[TokenResponse]] = (
-        #     refresh_method if retry_decorator is None else retry_decorator(refresh_method)
-        # )
 
         # lock for acquiring a new token
         self.acquire_task: asyncio.Task[None] | None = None
@@ -245,8 +241,9 @@ class AnonymousGCPToken(GCPToken):
     """Fake token generator."""
 
     # noinspection PyMissingConstructor
-    def __init__(self, http_client: AsyncHttpClient, **__: dict) -> None:
+    def __init__(self, http_client: AsyncHttpClient, scopes: list[str] | None = None, **__: dict) -> None:
         self.http_client = http_client
+        self.scopes = " ".join(scopes or [])
 
     async def get_token(self) -> str | None:
         return "fake"

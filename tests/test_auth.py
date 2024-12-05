@@ -14,7 +14,7 @@ from httpx import AsyncClient, Response, TimeoutException
 from pydantic import ValidationError
 
 from gcloud.auth.client import AnonymousGCPToken, GCPToken
-from gcloud.bigquery.constants import DEFAULT_SCOPES as BIGQUERY_SCOPES
+from gcloud.bigquery.constants import BIGQUERY_SCOPES
 
 SERVICE_FILE_CONTENT = """
 {
